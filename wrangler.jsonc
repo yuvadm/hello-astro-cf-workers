@@ -11,5 +11,13 @@
     },
     "observability": {
         "enabled": true
+    },
+    "durable_objects": {
+        "bindings": [
+            {
+                "name": "COUNTER_DO",
+                "class_name": "CounterDurableObject"
+            }
+        ]
     }
 }
