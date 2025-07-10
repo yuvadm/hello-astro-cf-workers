@@ -1,47 +1,75 @@
-# Astro Starter Kit: Minimal
+# Astro + Cloudflare Durable Objects Demo
 
-```sh
-npm create astro@latest -- --template minimal
+A minimal example showing how to use Cloudflare Durable Objects with Astro for persistent storage.
+
+## Features
+
+- **Persistent Counter**: A simple counter that maintains state across deployments
+- **Durable Objects**: Demonstrates Cloudflare's stateful serverless objects
+- **Minimal Setup**: Clean, simple implementation with minimal code
+
+## Project Structure
+
 ```
-
-[![Open in StackBlitz](https://developer.stackblitz.com/img/open_in_stackblitz.svg)](https://stackblitz.com/github/withastro/astro/tree/latest/examples/minimal)
-[![Open with CodeSandbox](https://assets.codesandbox.io/github/button-edit-lime.svg)](https://codesandbox.io/p/sandbox/github/withastro/astro/tree/latest/examples/minimal)
-[![Open in GitHub Codespaces](https://github.com/codespaces/badge.svg)](https://codespaces.new/withastro/astro?devcontainer_path=.devcontainer/minimal/devcontainer.json)
-
-> 🧑‍🚀 **Seasoned astronaut?** Delete this file. Have fun!
-
-## 🚀 Project Structure
-
-Inside of your Astro project, you'll see the following folders and files:
-
-```text
 /
-├── public/
 ├── src/
-│   └── pages/
-│       └── index.astro
-└── package.json
+│   ├── pages/
+│   │   ├── index.astro          # Homepage with counter demo
+│   │   └── api/
+│   │       └── counter.ts       # API routes for counter operations
+│   └── worker.ts                # Durable Object implementation
+├── wrangler.jsonc               # Cloudflare Workers configuration
+└── astro.config.mjs             # Astro configuration
 ```
 
-Astro looks for `.astro` or `.md` files in the `src/pages/` directory. Each page is exposed as a route based on its file name.
+## API Endpoints
 
-There's nothing special about `src/components/`, but that's where we like to put any Astro/React/Vue/Svelte/Preact components.
+- `GET /api/counter` - Get current counter value (returns plain text)
+- `POST /api/counter` - Increment counter and return new value (returns plain text)
 
-Any static assets, like images, can be placed in the `public/` directory.
+## Setup & Development
 
-## 🧞 Commands
+1. **Install dependencies**
+   ```bash
+   npm install
+   ```
 
-All commands are run from the root of the project, from a terminal:
+2. **Generate TypeScript types**
+   ```bash
+   npx wrangler@latest types
+   ```
 
-| Command                   | Action                                           |
-| :------------------------ | :----------------------------------------------- |
-| `npm install`             | Installs dependencies                            |
-| `npm run dev`             | Starts local dev server at `localhost:4321`      |
-| `npm run build`           | Build your production site to `./dist/`          |
-| `npm run preview`         | Preview your build locally, before deploying     |
-| `npm run astro ...`       | Run CLI commands like `astro add`, `astro check` |
-| `npm run astro -- --help` | Get help using the Astro CLI                     |
+3. **Start development server**
+   ```bash
+   npm run dev
+   ```
 
-## 👀 Want to learn more?
+4. **Build for production**
+   ```bash
+   npm run build
+   ```
 
-Feel free to check [our documentation](https://docs.astro.build) or jump into our [Discord server](https://astro.build/chat).
+## Deployment
+
+Deploy to Cloudflare Workers:
+
+```bash
+npx wrangler@latest deploy
+```
+
+The Durable Object will be automatically created and bound according to the configuration in `wrangler.jsonc`.
+
+## How It Works
+
+1. **Durable Object**: `CounterDurableObject` stores a persistent counter value
+2. **API Routes**: Simple endpoints that interact with the Durable Object
+3. **Frontend**: Basic HTML/JS interface that calls the API endpoints
+
+The counter value persists across deployments and is globally consistent across all requests.
+
+## Key Files
+
+- `src/worker.ts` - Durable Object class with storage operations
+- `src/pages/api/counter.ts` - API endpoints that proxy to the Durable Object
+- `wrangler.jsonc` - Durable Object binding configuration
+- `astro.config.mjs` - Astro + Cloudflare adapter configuration
