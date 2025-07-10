@@ -4,8 +4,8 @@ interface Env {
   COUNTER_DO: DurableObjectNamespace;
 }
 
-export const GET: APIRoute = async ({ request }) => {
-  const env = request.cf?.env as Env;
+export const GET: APIRoute = async ({ locals }) => {
+  const env = locals.runtime.env as Env;
   if (!env?.COUNTER_DO) {
     return new Response(JSON.stringify({ error: 'Durable Object not available' }), {
       status: 500,
@@ -24,8 +24,8 @@ export const GET: APIRoute = async ({ request }) => {
   });
 };
 
-export const POST: APIRoute = async ({ request }) => {
-  const env = request.cf?.env as Env;
+export const POST: APIRoute = async ({ request, locals }) => {
+  const env = locals.runtime.env as Env;
   if (!env?.COUNTER_DO) {
     return new Response(JSON.stringify({ error: 'Durable Object not available' }), {
       status: 500,

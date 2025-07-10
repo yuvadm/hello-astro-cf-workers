@@ -20,8 +20,8 @@ class CounterDurableObject extends DurableObject<Env> {
       const currentValue = (await this.ctx.storage.get<number>('counter')) || 0;
       const newValue = currentValue + 1;
       await this.ctx.storage.put('counter', newValue);
-      
-      return new Response(JSON.stringify({ 
+
+      return new Response(JSON.stringify({
         counter: newValue,
         timestamp: new Date().toISOString()
       }), {
@@ -31,7 +31,7 @@ class CounterDurableObject extends DurableObject<Env> {
 
     if (pathname === '/get') {
       const currentValue = (await this.ctx.storage.get<number>('counter')) || 0;
-      return new Response(JSON.stringify({ 
+      return new Response(JSON.stringify({
         counter: currentValue,
         timestamp: new Date().toISOString()
       }), {
@@ -41,7 +41,7 @@ class CounterDurableObject extends DurableObject<Env> {
 
     if (pathname === '/reset') {
       await this.ctx.storage.put('counter', 0);
-      return new Response(JSON.stringify({ 
+      return new Response(JSON.stringify({
         counter: 0,
         message: 'Counter reset',
         timestamp: new Date().toISOString()

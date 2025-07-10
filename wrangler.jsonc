@@ -19,5 +19,13 @@
                 "class_name": "CounterDurableObject"
             }
         ]
-    }
+    },
+    "migrations": [
+        {
+            "tag": "v1",
+            "new_sqlite_classes": [
+                "CounterDurableObject"
+            ]
+        }
+    ]
 }
