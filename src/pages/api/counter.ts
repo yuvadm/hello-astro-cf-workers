@@ -1,11 +1,9 @@
 import type { APIRoute } from 'astro';
 
-interface Env {
-  COUNTER_DO: DurableObjectNamespace;
-}
+const getEnv = (locals: any) => (locals as any).runtime.env as Env;
 
 export const GET: APIRoute = async ({ locals }) => {
-  const env = locals.runtime.env as Env;
+  const env = getEnv(locals);
   const id = env.COUNTER_DO.idFromName('counter');
   const stub = env.COUNTER_DO.get(id);
   const response = await stub.fetch('https://counter.do/get');
@@ -13,7 +11,7 @@ export const GET: APIRoute = async ({ locals }) => {
 };
 
 export const POST: APIRoute = async ({ locals }) => {
-  const env = locals.runtime.env as Env;
+  const env = getEnv(locals);
   const id = env.COUNTER_DO.idFromName('counter');
   const stub = env.COUNTER_DO.get(id);
   const response = await stub.fetch('https://counter.do/increment');

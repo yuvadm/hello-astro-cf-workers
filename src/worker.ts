@@ -3,10 +3,6 @@ import { App } from 'astro/app';
 import { handle } from '@astrojs/cloudflare/handler';
 import { DurableObject } from 'cloudflare:workers';
 
-interface Env {
-  COUNTER_DO: DurableObjectNamespace;
-}
-
 class CounterDurableObject extends DurableObject<Env> {
   async fetch(request: Request): Promise<Response> {
     const url = new URL(request.url);
@@ -32,7 +28,7 @@ export function createExports(manifest: SSRManifest) {
   return {
     default: {
       async fetch(request, env, ctx) {
-        return handle(manifest, app, request, env, ctx);
+        return handle(manifest, app, request as any, env as any, ctx);
       }
     } satisfies ExportedHandler<Env>,
     CounterDurableObject: CounterDurableObject,
