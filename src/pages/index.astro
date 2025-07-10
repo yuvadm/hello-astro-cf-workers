@@ -8,9 +8,266 @@
 		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
 		<meta name="viewport" content="width=device-width" />
 		<meta name="generator" content={Astro.generator} />
-		<title>Astro</title>
+		<title>Astro + Cloudflare Durable Objects Demo</title>
+		<style>
+			body {
+				font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+				max-width: 800px;
+				margin: 0 auto;
+				padding: 2rem;
+				line-height: 1.6;
+				background: #f8fafc;
+				color: #334155;
+			}
+			
+			.container {
+				background: white;
+				padding: 2rem;
+				border-radius: 12px;
+				box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+			}
+			
+			h1 {
+				color: #1e293b;
+				margin-bottom: 1rem;
+				font-size: 2.5rem;
+			}
+			
+			.subtitle {
+				color: #64748b;
+				margin-bottom: 2rem;
+				font-size: 1.1rem;
+			}
+			
+			.counter-section {
+				background: #f1f5f9;
+				padding: 2rem;
+				border-radius: 8px;
+				margin: 2rem 0;
+				text-align: center;
+			}
+			
+			.counter-display {
+				font-size: 3rem;
+				font-weight: bold;
+				color: #3b82f6;
+				margin: 1rem 0;
+			}
+			
+			.button-group {
+				display: flex;
+				gap: 1rem;
+				justify-content: center;
+				flex-wrap: wrap;
+			}
+			
+			button {
+				background: #3b82f6;
+				color: white;
+				border: none;
+				padding: 0.75rem 1.5rem;
+				border-radius: 6px;
+				font-size: 1rem;
+				cursor: pointer;
+				transition: background-color 0.2s;
+			}
+			
+			button:hover {
+				background: #2563eb;
+			}
+			
+			button:disabled {
+				background: #94a3b8;
+				cursor: not-allowed;
+			}
+			
+			.reset-btn {
+				background: #ef4444;
+			}
+			
+			.reset-btn:hover {
+				background: #dc2626;
+			}
+			
+			.status {
+				margin-top: 1rem;
+				padding: 0.75rem;
+				border-radius: 6px;
+				font-size: 0.9rem;
+			}
+			
+			.status.loading {
+				background: #fef3c7;
+				color: #92400e;
+			}
+			
+			.status.error {
+				background: #fee2e2;
+				color: #b91c1c;
+			}
+			
+			.status.success {
+				background: #dcfce7;
+				color: #166534;
+			}
+			
+			.explanation {
+				background: #f8fafc;
+				padding: 1.5rem;
+				border-left: 4px solid #3b82f6;
+				margin: 2rem 0;
+			}
+			
+			.explanation h3 {
+				margin-top: 0;
+				color: #1e293b;
+			}
+			
+			code {
+				background: #e2e8f0;
+				padding: 0.25rem 0.5rem;
+				border-radius: 4px;
+				font-family: 'Monaco', 'Consolas', monospace;
+				font-size: 0.9rem;
+			}
+		</style>
 	</head>
 	<body>
-		<h1>Astro</h1>
+		<div class="container">
+			<h1>Astro + Cloudflare Durable Objects</h1>
+			<p class="subtitle">A persistent counter demonstrating Durable Objects with Astro and Cloudflare Workers</p>
+			
+			<div class="counter-section">
+				<h2>Global Counter</h2>
+				<div class="counter-display" id="counterValue">-</div>
+				<div class="button-group">
+					<button id="getBtn">Get Counter</button>
+					<button id="incrementBtn">Increment</button>
+					<button id="resetBtn" class="reset-btn">Reset</button>
+				</div>
+				<div id="status" class="status" style="display: none;"></div>
+			</div>
+			
+			<div class="explanation">
+				<h3>How it works</h3>
+				<p>This demo showcases a <strong>Cloudflare Durable Object</strong> that maintains a persistent counter. The counter state survives across requests, deployments, and server restarts.</p>
+				
+				<h4>API Endpoints:</h4>
+				<ul>
+					<li><code>GET /api/counter</code> - Retrieve the current counter value</li>
+					<li><code>POST /api/counter</code> - Increment the counter by 1</li>
+					<li><code>POST /api/counter?action=reset</code> - Reset the counter to 0</li>
+				</ul>
+				
+				<h4>Key Features:</h4>
+				<ul>
+					<li><strong>Persistent Storage:</strong> Counter value persists across deployments</li>
+					<li><strong>Global State:</strong> Single counter instance shared across all requests</li>
+					<li><strong>Edge Computing:</strong> Runs at Cloudflare's edge locations</li>
+					<li><strong>Real-time Updates:</strong> Immediate consistency for all operations</li>
+				</ul>
+			</div>
+		</div>
+
+		<script>
+			const counterValue = document.getElementById('counterValue');
+			const getBtn = document.getElementById('getBtn');
+			const incrementBtn = document.getElementById('incrementBtn');
+			const resetBtn = document.getElementById('resetBtn');
+			const status = document.getElementById('status');
+
+			function showStatus(message, type = 'loading') {
+				status.textContent = message;
+				status.className = `status ${type}`;
+				status.style.display = 'block';
+				
+				if (type !== 'loading') {
+					setTimeout(() => {
+						status.style.display = 'none';
+					}, 3000);
+				}
+			}
+
+			function setButtonsDisabled(disabled) {
+				getBtn.disabled = disabled;
+				incrementBtn.disabled = disabled;
+				resetBtn.disabled = disabled;
+			}
+
+			async function getCounter() {
+				try {
+					setButtonsDisabled(true);
+					showStatus('Getting counter value...', 'loading');
+					
+					const response = await fetch('/api/counter');
+					const data = await response.json();
+					
+					if (response.ok) {
+						counterValue.textContent = data.counter;
+						showStatus(`Counter retrieved: ${data.counter}`, 'success');
+					} else {
+						throw new Error(data.error || 'Failed to get counter');
+					}
+				} catch (error) {
+					showStatus(`Error: ${error.message}`, 'error');
+					counterValue.textContent = 'Error';
+				} finally {
+					setButtonsDisabled(false);
+				}
+			}
+
+			async function incrementCounter() {
+				try {
+					setButtonsDisabled(true);
+					showStatus('Incrementing counter...', 'loading');
+					
+					const response = await fetch('/api/counter', {
+						method: 'POST'
+					});
+					const data = await response.json();
+					
+					if (response.ok) {
+						counterValue.textContent = data.counter;
+						showStatus(`Counter incremented to: ${data.counter}`, 'success');
+					} else {
+						throw new Error(data.error || 'Failed to increment counter');
+					}
+				} catch (error) {
+					showStatus(`Error: ${error.message}`, 'error');
+				} finally {
+					setButtonsDisabled(false);
+				}
+			}
+
+			async function resetCounter() {
+				try {
+					setButtonsDisabled(true);
+					showStatus('Resetting counter...', 'loading');
+					
+					const response = await fetch('/api/counter?action=reset', {
+						method: 'POST'
+					});
+					const data = await response.json();
+					
+					if (response.ok) {
+						counterValue.textContent = data.counter;
+						showStatus('Counter reset to 0', 'success');
+					} else {
+						throw new Error(data.error || 'Failed to reset counter');
+					}
+				} catch (error) {
+					showStatus(`Error: ${error.message}`, 'error');
+				} finally {
+					setButtonsDisabled(false);
+				}
+			}
+
+			getBtn.addEventListener('click', getCounter);
+			incrementBtn.addEventListener('click', incrementCounter);
+			resetBtn.addEventListener('click', resetCounter);
+
+			// Load initial counter value
+			getCounter();
+		</script>
 	</body>
 </html>
