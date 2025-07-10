@@ -1,7 +1,14 @@
 {
     "name": "helloastrocf",
     "compatibility_date": "2025-07-10",
+    "compatibility_flags": [
+        "nodejs_compat"
+    ],
     "assets": {
+        "binding": "ASSETS",
         "directory": "./dist"
+    },
+    "observability": {
+        "enabled": true
     }
 }
