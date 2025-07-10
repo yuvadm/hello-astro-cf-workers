@@ -41,7 +41,7 @@ A minimal example showing how to use Cloudflare Durable Objects with Astro for p
 
 3. **Start development server**
    ```bash
-   npm run dev
+   npx wrangler@latest dev
    ```
 
 4. **Build for production**
