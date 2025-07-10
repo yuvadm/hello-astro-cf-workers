@@ -1,5 +1,6 @@
 {
     "name": "helloastrocf",
+    "main": "./dist/_worker.js/index.js",
     "compatibility_date": "2025-07-10",
     "compatibility_flags": [
         "nodejs_compat"
